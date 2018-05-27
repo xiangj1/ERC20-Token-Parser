@@ -8,8 +8,6 @@ class MyHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if(tag == 'td'):
             self.isTd = 1
-        else:
-            self.isTd = 0
 
     def handle_endtag(self, tag):
         if(tag == 'td'):
