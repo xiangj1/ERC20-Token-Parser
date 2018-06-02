@@ -3,6 +3,7 @@ from html.parser import HTMLParser
 class MyHTMLParser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
+        self.round = 0
         self.isTd = 0
 
     def handle_starttag(self, tag, attrs):
@@ -15,7 +16,12 @@ class MyHTMLParser(HTMLParser):
 
     def handle_data(self, data):
         if(self.isTd == 1):
-            print("Data  :", data)
+            self.round += 1
+            if(self.round < 4):
+                print(data, end=",")
+            else:
+                print(data, end="\n")
+                self.round = 0
 
 parser = MyHTMLParser()
 
