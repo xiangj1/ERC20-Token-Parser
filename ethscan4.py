@@ -9,6 +9,8 @@ token = []
 address = []
 total_supply = []
 decimals = []
+token_n = []
+contract_address = []
 
 class erc20_token_list(HTMLParser):
     
@@ -51,6 +53,8 @@ class token_fixed_info(HTMLParser):
         self.istd =0
         self.r = 0
         self.t = 0
+        self.a = 0
+        self.f  = 0
     
     def handle_starttag(self, tag, attrs):
         if (tag == 'table'):
@@ -71,12 +75,23 @@ class token_fixed_info(HTMLParser):
             self.round += 1
             if(self.round ==3):
                 total_supply.append(data.replace(",","").replace("\\n","").split(" ")[0])
+                try:
+                    token_n.append(data.replace(",","").replace("\\n","").split(" ")[1])
+                except IndexError:
+                    token_n.append(data)
             if ('Decimals:' in data):
                self.r = 1
+            if ('Contract:' in data):
+               self.a = 1
         if(self.istd ==1 and self.r == 1):
             self.t += 1
             if (self.t ==2):
                 decimals.append(data.replace("\\n",""))
+        if(self.istd ==1 and self.a == 1):
+            self.f += 1
+            if (self.f ==3):
+                contract_address.append(data)
+        
 
 for i in range(1,15):
     url1= 'https://etherscan.io/tokens?p='+ str(i)
@@ -88,8 +103,6 @@ for i in range(1,15):
 
 for j in range(0,len(token)):
     url2 = 'https://etherscan.io/token/' + str(address[j])
-    token_n.append(token[j])
-    contract_address.append(address[j])
     req = Request(url2, headers={'User-Agent': 'Mozilla/5.0'})
     webpage = urlopen(req).read()
     parser = token_fixed_info() 
@@ -102,8 +115,4 @@ end = time.time()
 print("Time Used(in seconds):")
 print(end - start)
 
-#table = pd.DataFrame({'Token':token,'Address':address,'Total_Supply':total_supply,'Decimals':decimals})
-
-
-
-
+table = pd.DataFrame({'Token':token_n,'Address':contract_address,'Total_Supply':total_supply,'Decimals':decimals})
