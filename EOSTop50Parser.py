@@ -1,12 +1,11 @@
 from html.parser import HTMLParser
-import os
 
 class MyHTMLParser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
         self.round = 0
         self.isTd = 0
-        self.file = open("EOSdata.json", "w+")
+        self.file = open("~/TokenData/EOSdata.json", "w+")
         self.file.write("[")
 
     def handle_starttag(self, tag, attrs):
