@@ -74,8 +74,8 @@ class token_fixed_info(HTMLParser):
         if(self.istd == 1):
             self.round += 1
             if(self.round ==3):
-                total_supply.append(data.replace(",","").replace("\\n","").split(" ")[0])
                 try:
+                    total_supply.append(data.replace(",","").replace("\\n","").split(" ")[0])
                     token_n.append(data.replace(",","").replace("\\n","").split(" ")[1])
                 except IndexError:
                     token_n.append(data)
@@ -91,6 +91,34 @@ class token_fixed_info(HTMLParser):
             self.f += 1
             if (self.f ==3):
                 contract_address.append(data)
+
+class wallet_info(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.round = 0
+        self.isTd = 0
+
+    def handle_starttag(self, tag, attrs):
+        if(tag == 'td'):
+            self.isTd = 1
+
+    def handle_endtag(self, tag):
+        if(tag == 'td'):
+            self.isTd = 0
+
+    def handle_data(self, data):
+        if(self.isTd == 1):
+            self.round += 1
+            for i in range(0,50):   
+                if(self.round ==int(i*4)+1):
+                    Rank.append(data)
+                elif(self.round ==(i*4)+2):
+                    Wallet_Address.append(data)
+                elif(self.round ==(i*4)+3):
+                    Quantity.append(data)
+                elif(self.round ==(i*4)+4):
+                    Percentage.append(data)
+
         
 
 for i in range(1,15):
@@ -107,12 +135,30 @@ for j in range(0,len(token)):
     webpage = urlopen(req).read()
     parser = token_fixed_info() 
     parser.feed(str(webpage))
-    
 
-
-
+table = pd.DataFrame({'Token':token_n,'Address':contract_address,'Total_Supply':total_supply,'Decimals':decimals})
 end = time.time()
 print("Time Used(in seconds):")
 print(end - start)
 
-table = pd.DataFrame({'Token':token_n,'Address':contract_address,'Total_Supply':total_supply,'Decimals':decimals})
+question = input("Press y to continue: ")
+for a in range(1,100):
+    if (question == 'y'):
+        start1 = time.time()
+        for k in range(0,len(token_n)): 
+            Rank = []
+            Wallet_Address=[]
+            Quantity = []
+            Percentage = []
+            for j in range(1,21):    
+                url3 = 'https://etherscan.io/token/generic-tokenholders2?a=%s&p=%d&s=%s'%(table.loc[k][0],j,int(table.loc[k][3])*10**int(table.loc[k][1]))
+                req = Request(url3, headers={'User-Agent': 'Mozilla/5.0'})
+                webpage = urlopen(req).read()
+                parser = wallet_info()
+                parser.feed(str(webpage))
+            df = pd.DataFrame({'Rank':Rank,'Wallet_Address':Wallet_Address,'Quantity':Quantity,'Percentage':Percentage})
+            df.to_csv("token_wallet_%s.csv"%(table.loc[k][2])) 
+        end1 = time.time()
+        print("Time Used(in seconds):")
+        print(end1 - start1)
+        break
