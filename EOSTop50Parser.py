@@ -17,7 +17,7 @@ class MyHTMLParser(HTMLParser):
         if(tag == 'td'):
             self.isTd = 0
         elif(tag == 'table'):
-            self.file.write("{\"rank\":\"eof\"}]")
+            self.file.write("{\"status\":\"eof\"}]")
 
     def handle_data(self, data):
         if(self.isTd == 1):
@@ -25,7 +25,7 @@ class MyHTMLParser(HTMLParser):
             if(self.round == 1):
                 self.file.write("{\"rank\":\"" + data + "\",")
             elif(self.round == 2):
-                self.file.write("\"adress\":\"" + data + "\",")
+                self.file.write("\"address\":\"" + data + "\",")
             elif(self.round == 3):
                 self.file.write("\"amount\":\"" + data + "\",")
             elif(self.round == 4):
