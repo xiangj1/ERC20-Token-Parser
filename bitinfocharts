@@ -1,0 +1,93 @@
+from html.parser import HTMLParser
+from urllib.request import Request, urlopen
+import pandas as pd
+import numpy as np
+import time
+
+
+
+class wallet_info(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.round = 0
+        self.istable=0
+        self.inTbody = 0
+        self.isTd = 0
+
+    def handle_starttag(self, tag, attrs):
+        if(tag=='table'):
+            for name, value in attrs:
+                if(name =='class' and value== 'table table-striped bb abtb'):
+                    self.istable=1
+        if(tag=='tbody' and self.istable==1):
+            self.inTbody =1
+        if(tag == 'td' and self.inTbody == 1):
+            self.isTd = 1
+        
+    def handle_endtag(self, tag):
+        if(tag =='table'):
+            self.istable = 0
+        if(tag=='tbody'):
+            self.inTbody = 0
+        if(tag == 'td'):
+            self.isTd = 0        
+
+    def handle_data(self, data):
+        if(self.isTd == 1):
+            self.round += 1
+            daf.append(data.replace(",",""))
+ 
+start = time.time()
+daf = []
+Rank = []
+Wallet_Address=[]
+Quantity = []
+Percentage = []
+
+name = ['bitcoin', 'bitcoin%20cash', 'litecoin', 'dash', 'bitcoin%20gold', 'dogecoin', 'reddcoin', 'vertcoin', 'peercoin', 'namecoin', 'feathercoin', 'blackcoin', 'auroacoin', 'novacoin']
+for i in range(0,14):
+    url = 'https://bitinfocharts.com/top-100-richest-%s-addresses.html'%name[i]
+    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    webpage = urlopen(req).read()
+    parser = wallet_info()
+    parser.feed(str(webpage))
+    j = 0
+    for k in range(0,10000):
+        try:
+            if("wallet" in daf[j]):
+                del daf[j]
+            elif(daf[j] == " "):
+                del daf[j]
+            elif("/" in daf[j]):
+                del daf[j]
+            elif("+" in daf[j]):
+                del daf[j]
+            elif("-" in daf[j]):
+                del daf[j]
+            else:
+                j +=1
+        except IndexError:
+            break
+    m = 0
+    for k in range(1,1000):
+        try:
+            if("%" in daf[k-1]):
+                while (daf[k] != str(int(0.25*(k)+1))):
+                    del daf[k]
+                    if(daf[k] == str(int(0.25*(k)+1))):
+                        break
+        except IndexError:
+            break
+
+    for j in range(0,100):
+        Rank.append(daf[j*4])
+        Wallet_Address.append(daf[j*4+1])
+        Quantity.append(daf[j*4+2].split(" ")[0])
+        Percentage.append(daf[j*4+3])
+    df = pd.DataFrame({'Rank':Rank,'Wallet_Address':Wallet_Address,'Quantity':Quantity,'Percentage':Percentage})
+    df.to_csv("token_wallet_%s.csv"%name[i])
+
+end = time.time()                 
+print("Time Used(in seconds):")
+print(end - start)
+
