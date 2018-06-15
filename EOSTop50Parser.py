@@ -1,6 +1,6 @@
 from html.parser import HTMLParser
 
-class MyHTMLParser(HTMLParser):
+class TokenTop50Parser(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
         self.round = 0
@@ -32,7 +32,7 @@ class MyHTMLParser(HTMLParser):
                 self.round = 0
             
 
-parser = MyHTMLParser()
+parser = TokenTop50Parser()
 
 info_page = open('test.html', 'r').read()
 parser.feed(info_page)

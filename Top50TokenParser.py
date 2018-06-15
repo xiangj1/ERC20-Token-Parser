@@ -14,6 +14,8 @@ with open("token_supply.txt", "r+") as token_supply_file:
         token_supply[key] = value[:-1]
 
 token_supply_file = open("token_supply.txt", "a")
+token_symbol_file = open("token_symbol.json", "w+")
+token_symbol_file.write("[")
 
 class TokenTop50Parser(HTMLParser):
     def __init__(self, token_symbol):
@@ -70,6 +72,7 @@ class Top50TokenParser(HTMLParser):
         if(self.isH5 == 1):
             token_symbol = data[data.index('(')+1:data.index(')')]
             print("Symbol:" + token_symbol) #symbol
+            token_symbol_file.write("{\"symbol\":\"" + token_symbol + "\"},")
 
             #get total supply of the account
             token_total_supply = token_supply.get(self.token_address)
@@ -106,5 +109,7 @@ request = urllib.request.Request(top50TokenUrl, headers={'User-Agent': 'Mozilla/
 
 webpage = urllib.request.urlopen(request).read()
 top50Token.feed(str(webpage))
+
+token_symbol_file.write('{"status":"eof"}]')
 
 print("Cost: " + str(time.time() - starting_time))
