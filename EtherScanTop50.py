@@ -101,8 +101,10 @@ class Top50TokenParser(HTMLParser):
         elif(tag == 'h5'):
             self.isH5 = 0
 
+# Initial a info parser
 top50Token = Top50TokenParser()
 
+#given the url of the list of top 50 tokens
 top50TokenUrl = 'https://etherscan.io/tokens?p=' + '1'
 
 request = urllib.request.Request(top50TokenUrl, headers={'User-Agent': 'Mozilla/5.0'})
