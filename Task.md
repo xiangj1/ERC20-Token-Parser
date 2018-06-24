@@ -1,0 +1,53 @@
+#Procedure
+
+1. 从coinMarketCap上获取listing
+    可用api:
+    https://coinmarketcap.com/api/
+    全部币：
+    https://api.coinmarketcap.com/v2/listings/
+    币基本信息（只显示前100）（Json Array）：
+    https://api.coinmarketcap.com/v2/ticker/?structure=array
+    格式：
+         {
+            "id": 1, 
+            "name": "Bitcoin", 
+            "symbol": "BTC", 
+            "website_slug": "bitcoin", 
+            "rank": 1, 
+            "circulating_supply": 17111612.0, 
+            "total_supply": 17111612.0, 
+            "max_supply": 21000000.0, 
+            "quotes": {
+                "USD": {
+                    "price": 6120.32, 
+                    "volume_24h": 3401690000.0, 
+                    "market_cap": 104728541156.0, 
+                    "percent_change_1h": -0.73, 
+                    "percent_change_24h": -0.36, 
+                    "percent_change_7d": -6.77
+                }
+            }, 
+            "last_updated": 1529801973
+        }, 
+        {
+            "id": 1027, 
+            "name": "Ethereum", 
+            "symbol": "ETH", 
+            "website_slug": "ethereum", 
+            "rank": 2, 
+            "circulating_supply": 100264422.0, 
+            "total_supply": 100264422.0, 
+            "max_supply": null, 
+            "quotes": {
+                "USD": {
+                    "price": 470.672, 
+                    "volume_24h": 1642010000.0, 
+                    "market_cap": 47191656090.0, 
+                    "percent_change_1h": -0.84, 
+                    "percent_change_24h": -0.13, 
+                    "percent_change_7d": -6.43
+                }
+            }, 
+            "last_updated": 1529801961
+        }
+
