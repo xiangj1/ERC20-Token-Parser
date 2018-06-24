@@ -1,7 +1,7 @@
 #Procedure
 
 1. 从coinMarketCap上获取listing
-    可用api:
+    可用api介绍:
     https://coinmarketcap.com/api/
     全部币：
     https://api.coinmarketcap.com/v2/listings/
@@ -51,3 +51,4 @@
             "last_updated": 1529801961
         }
 
+2. 
