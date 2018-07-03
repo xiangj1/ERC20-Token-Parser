@@ -22,7 +22,7 @@ class TokenTop50Parser(HTMLParser):
         HTMLParser.__init__(self)
         self.round = 0
         self.isTd = 0
-        self.file = open("TokenData/" + token_symbol + ".json", "w+")
+        self.file = open("CoinData/" + token_symbol + ".json", "w+")
         self.file.write("[")
 
     def handle_starttag(self, tag, attrs):
@@ -66,12 +66,12 @@ class TopTokenParser(HTMLParser):
             for name, value in attrs:
                 if(name == 'href'):
                     self.token_address = value[9:-2]
-                    print(self.token_address) #contract address
+                    # print(self.token_address) #contract address
     
     def handle_data(self, data):
         if(self.isH5 == 1):
             token_symbol = data[data.index('(')+1:data.index(')')]
-            print("Symbol:" + token_symbol) #symbol
+            # print("Symbol:" + token_symbol) #symbol
             token_symbol_file.write("{\"symbol\":\"" + token_symbol + "\"},")
 
             #get total supply of the account
@@ -82,12 +82,12 @@ class TopTokenParser(HTMLParser):
                 tem_str = str(urllib.request.urlopen(supply_request).read())
 
                 token_total_supply = tem_str[tem_str.index("result")+9:-3]
-                print(token_total_supply) # total supply
+                # print(token_total_supply) # total supply
 
                 token_supply[self.token_address] = token_total_supply #store in dictionary
                 token_supply_file.write(self.token_address + " " + token_total_supply + "\n") #write in file
-            else:
-                print("Cache:" + token_total_supply)
+            # else:
+            #     print("Cache:" + token_total_supply)
 
             token_top50_request = urllib.request.Request(token_top50_url + self.token_address + "&s=" + token_total_supply, headers={'User-Agent': 'Mozilla/5.0'})
             tem_str = str(urllib.request.urlopen(token_top50_request).read())
@@ -104,13 +104,13 @@ class TopTokenParser(HTMLParser):
 # Initial a info parser
 topToken = TopTokenParser()
 
-for i in range(1, 4):
+for i in range(1, 5):
     #given the url of the list of top 200 tokens
     topTokenUrl = 'https://etherscan.io/tokens?p=' + str(i)
     request = urllib.request.Request(topTokenUrl, headers={'User-Agent': 'Mozilla/5.0'})
     webpage = urllib.request.urlopen(request).read()
     topToken.feed(str(webpage))
 
-token_symbol_file.write('{"status":"eof"}]')
+token_symbol_file.write('{\"timestamp\":\"' + str(int(time.time())) + '\"}]')
 
-print("Cost: " + str(time.time() - starting_time))
+print("EtherScanTop200.py DONE at: " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\t Cost: " + str(time.time() - starting_time))
