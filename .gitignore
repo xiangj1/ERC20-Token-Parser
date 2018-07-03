@@ -2,3 +2,6 @@
 *.html
 test.html
 *.csv
+
+result.txt
+temp.py
