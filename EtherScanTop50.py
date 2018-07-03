@@ -22,7 +22,7 @@ class TokenTop50Parser(HTMLParser):
         HTMLParser.__init__(self)
         self.round = 0
         self.isTd = 0
-        self.file = open(token_symbol + ".json", "w+")
+        self.file = open("TokenData/" + token_symbol + ".json", "w+")
         self.file.write("[")
 
     def handle_starttag(self, tag, attrs):
