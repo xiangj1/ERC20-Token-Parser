@@ -51,4 +51,12 @@
             "last_updated": 1529801961
         }
 
-2. 
+2. 利用website_slug进入每个coin的网页提取explorer地址
+    如果是from etherscan，提取etherscan地址
+    提取出top50 holder
+
+3. parse BitInfoCharts 的 richlsit
+    里面包含14个coin的richlist
+    ['BTC', 'BCH', 'LTC', 'DASH', 'BTG', 'DOGE', 'RDD', 'VTC', 'PPC', 'NMC', 'FTC', 'BLK', 'AUR', 'NVC']
+
+4. 对剩余币手动寻找richlist再parse
