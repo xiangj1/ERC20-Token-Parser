@@ -1,7 +1,8 @@
 from html.parser import HTMLParser
-from urllib.request import Request, urlopen
-import pandas as pd
+import urllib.request
 import time
+
+url = 'https://etherscan.io/accounts/1?ps=25'
 
 class wallet_info(HTMLParser):
     def __init__(self):
@@ -10,70 +11,63 @@ class wallet_info(HTMLParser):
         self.inTbody = 0
         self.isTd = 0
 
+        self.file = open('CoinData/ETH.json', "w+")
+        self.file.write('[')
+
     def handle_starttag(self, tag, attrs):
         if(tag == 'tbody'):
             self.inTbody = 1
-        if(tag == 'td' and self.inTbody == 1):
-            self.isTd = 1
+        elif(tag == 'td' and self.inTbody == 1):
+            self.isTd += 1
+            if(self.isTd == 1): #rank
+                self.file.write('{\"rank\":')
+                # print('\nrank: ', end='')
+            elif(self.isTd == 2): #address
+                self.file.write(',\"address\":')
+                # print('\taddress: ', end='')
+            elif(self.isTd == 3): #amount
+                self.file.write(',\"amount\":\"')
+                # print('\tamount: ', end='')
+            elif(self.isTd == 4): #percentage
+                self.file.write(',\"percentage\":')
+                # print('\tpercentage: ', end='')
+        
+            
 
     def handle_endtag(self, tag):
         if(tag == 'tbody'):
             self.inTbody = 0
-        if(tag == 'td'):
+        elif(tag == 'tr'):
             self.isTd = 0
 
     def handle_data(self, data):
-        if(self.isTd == 1):
-            self.round += 1
-            daf.append(data.replace(",", "").replace(" Ether", ""))
+        if(self.isTd == 2 and data.find('|') != -1): #address
+            return
+
+        if(self.isTd == 3 and len(data) > 0): #amount
+            if(data.find('Ether') != -1):
+                self.file.write(data[:-6] + '\"') #after .
+                # print(data[:-6], end='')
+            else:
+                self.file.write(data.replace(',',''))
+                # print(data.replace(',',''), end='') 
+
+        elif(self.isTd > 0 and self.isTd < 5 and len(data.strip()) > 0):
+            self.file.write('\"' + data + '\"')
+            # print(data, end='')
+        
+        if(self.isTd == 4): #percentage
+            self.file.write('},')
+            
 
 #global variable
-start = time.time()
-daf = []
-Rank = []
-Wallet_Address = []
-Quantity = []
-Percentage = []
+starting_time = time.time()
 
-url = 'https://etherscan.io/accounts/1?ps=50'
-req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-webpage = urlopen(req).read()
+req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+webpage = urllib.request.urlopen(req).read()
 parser = wallet_info()
 
-
 parser.feed(str(webpage))
-j = 0
-for k in range(0, 10000):
-    try:
-        if(daf[j] == " "):
-            del daf[j]
-        elif('|' in daf[j]):
-            del daf[j]
-        elif(daf[j+1] == '.'):
-            daf[j] = str(daf[j])+str(daf[j+1])+str(daf[j+2])
-            del daf[j+1]
-            del daf[j+1]
-        else:
-            j += 1
-    except IndexError:
-        break
+parser.file.write('{\"timestamp\":\"' + str(int(time.time())) + '\"}]')
 
-for i in range(0, len(daf)):
-    print(i, daf[i])
-
-for l in range(0, 100):
-    try:
-        Rank.append(daf[l*5])
-        Wallet_Address.append(daf[l*5+1])
-        Quantity.append(daf[l*5+2])
-        Percentage.append(daf[l*5+3])
-    except IndexError:
-        break
-df = pd.DataFrame({'Rank': Rank, 'Wallet_Address': Wallet_Address,
-                   'Quantity': Quantity, 'Percentage': Percentage})
-df.to_csv("token_wallet_Ethereum.csv")
-
-
-end = time.time()
-print("Time Used(in seconds):")
-print(end - start)
+print("Ethereum.py DONE at: " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\t Cost: " + str(time.time() - starting_time))
