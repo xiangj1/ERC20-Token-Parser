@@ -76,6 +76,7 @@ with open('coin_addresses.txt', 'r') as coin_addresses:
             #if token supply is unknown, get from api
             if(token_total_supply == None):
                 supply_request = urllib.request.Request(total_supply_api + token_address, headers={'User-Agent': 'Mozilla/5.0'})
+                time.sleep(1)
                 tem_str = str(urllib.request.urlopen(supply_request).read())
 
                 token_total_supply = tem_str[tem_str.index("result")+9:-3]
@@ -90,9 +91,11 @@ with open('coin_addresses.txt', 'r') as coin_addresses:
 
             # get top50 holders from etherscan
             token_top50_request = urllib.request.Request(token_top50_url + token_address + "&s=" + token_total_supply, headers={'User-Agent': 'Mozilla/5.0'})
+            time.sleep(1)
             tem_str = str(urllib.request.urlopen(token_top50_request).read())
 
             while(tem_str.find(limit_warning) != -1): #request been rejected
+                time.sleep(1)
                 tem_str = str(urllib.request.urlopen(token_top50_request).read())
 
             tokenTop50Parser = TokenTop50Parser(symbol)

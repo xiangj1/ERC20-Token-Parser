@@ -82,6 +82,7 @@ class TopTokenParser(HTMLParser):
 
             if(token_total_supply == None):
                 supply_request = urllib.request.Request(total_supply_api + self.token_address, headers={'User-Agent': 'Mozilla/5.0'})
+                time.sleep(1)
                 tem_str = str(urllib.request.urlopen(supply_request).read())
 
                 token_total_supply = tem_str[tem_str.index("result")+9:-3]
@@ -93,9 +94,11 @@ class TopTokenParser(HTMLParser):
             #     print("Cache:" + token_total_supply)
 
             token_top50_request = urllib.request.Request(token_top50_url + self.token_address + "&s=" + token_total_supply, headers={'User-Agent': 'Mozilla/5.0'})
+            time.sleep(1)
             tem_str = str(urllib.request.urlopen(token_top50_request).read())
 
             while(tem_str.find(limit_warning) != -1): #request been rejected
+                time.sleep(1)
                 tem_str = str(urllib.request.urlopen(token_top50_request).read())
 
             tokenTop50Parser = TokenTop50Parser(token_symbol)
