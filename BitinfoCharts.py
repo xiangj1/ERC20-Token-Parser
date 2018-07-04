@@ -15,8 +15,8 @@ class wallet_info(HTMLParser):
         self.isData = 0
         self.isAddress = 0
 
-        self.file = open('CoinData/' + symbol + '.json', 'w+')
-        self.file.write('[')
+        self.file = open('CoinData/' + symbol + '.json.top100', 'w+')
+        self.file_str = '{\"data\":['
 
         # print('Symbol: ' + symbol)
 
@@ -38,10 +38,10 @@ class wallet_info(HTMLParser):
                     self.isData = 1
                 elif(name == 'data-val' and self.isData == 1 and self.round > 0):
                     if(self.round == 2):
-                        self.file.write('\"amount\":\"%s\",'%value)
+                        self.file_str += '\"amount\":\"%s\",'%value
                         # print('Amount: ' + value, end = '\t')
                     else:
-                        self.file.write('\"percentage\":\"' + value + '%\"},')
+                        self.file_str += '\"percentage\":\"' + value + '%\"},'
                         # print('Percentage: ' + value)
 
                     self.isData = 0
@@ -52,7 +52,7 @@ class wallet_info(HTMLParser):
 
         elif(tag == 'tr' and self.inTable == 1 and self.inTbody == 1):
             self.rank += 1
-            self.file.write('{\"rank\": \"%s\",'%self.rank)
+            self.file_str += '{\"rank\": \"%s\",'%self.rank
             # print(str(self.rank) + ', ', end=' ')
 
         elif(tag == 'a' and self.inTable == 1):
@@ -69,7 +69,7 @@ class wallet_info(HTMLParser):
 
     def handle_data(self, data):
         if(self.isAddress == 1):
-            self.file.write('\"address\":\"%s\",'%data)
+            self.file_str += '\"address\":\"%s\",'%data
             # print('Address: ' + data, end= '\t')
             self.isAddress = 0
         return
@@ -82,7 +82,8 @@ for i in range(0, len(coin_name)):
     webpage = urlopen(req).read()
     parser = wallet_info(coin_symbol[i])
     parser.feed(str(webpage))
-    parser.file.write('{\"timestamp\":\"' + str(int(time.time())) + '\"}]')
+    parser.file.write(parser.file_str[:-1])
+    parser.file.write('],\"timestamp\":\"' + str(int(time.time())) + '\"}')
     
 # parser = wallet_info(coin_symbol[1])
 # parser.feed(open('top-100-richest-bitcoin-addresses.html').read())

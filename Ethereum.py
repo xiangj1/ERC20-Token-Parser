@@ -2,7 +2,8 @@ from html.parser import HTMLParser
 import urllib.request
 import time
 
-url = 'https://etherscan.io/accounts/1?ps=25'
+url = 'https://etherscan.io/accounts/1?ps=100'
+
 
 class wallet_info(HTMLParser):
     def __init__(self):
@@ -11,8 +12,8 @@ class wallet_info(HTMLParser):
         self.inTbody = 0
         self.isTd = 0
 
-        self.file = open('CoinData/ETH.json', "w+")
-        self.file.write('[')
+        self.file = open('CoinData/ETH.json.new', "w+")
+        self.file_str = '{\"data\":['
 
     def handle_starttag(self, tag, attrs):
         if(tag == 'tbody'):
@@ -20,16 +21,16 @@ class wallet_info(HTMLParser):
         elif(tag == 'td' and self.inTbody == 1):
             self.isTd += 1
             if(self.isTd == 1): #rank
-                self.file.write('{\"rank\":')
+                self.file_str += '{\"rank\":'
                 # print('\nrank: ', end='')
             elif(self.isTd == 2): #address
-                self.file.write(',\"address\":')
+                self.file_str += ',\"address\":'
                 # print('\taddress: ', end='')
             elif(self.isTd == 3): #amount
-                self.file.write(',\"amount\":\"')
+                self.file_str += ',\"amount\":\"'
                 # print('\tamount: ', end='')
             elif(self.isTd == 4): #percentage
-                self.file.write(',\"percentage\":')
+                self.file_str += ',\"percentage\":'
                 # print('\tpercentage: ', end='')
         
             
@@ -46,18 +47,18 @@ class wallet_info(HTMLParser):
 
         if(self.isTd == 3 and len(data) > 0): #amount
             if(data.find('Ether') != -1):
-                self.file.write(data[:-6] + '\"') #after .
+                self.file_str += data[:-6] + '\"' #after .
                 # print(data[:-6], end='')
             else:
-                self.file.write(data.replace(',',''))
+                self.file_str += data.replace(',','')
                 # print(data.replace(',',''), end='') 
 
         elif(self.isTd > 0 and self.isTd < 5 and len(data.strip()) > 0):
-            self.file.write('\"' + data + '\"')
+            self.file_str += '\"' + data + '\"'
             # print(data, end='')
         
         if(self.isTd == 4): #percentage
-            self.file.write('},')
+            self.file_str += '},'
             
 
 #global variable
@@ -68,6 +69,8 @@ webpage = urllib.request.urlopen(req).read()
 parser = wallet_info()
 
 parser.feed(str(webpage))
-parser.file.write('{\"timestamp\":\"' + str(int(time.time())) + '\"}]')
+parser.file.write(parser.file_str[:-1])
+# parser.file.write('{\"status\":\"eof\"}],')
+parser.file.write('],\"timestamp\":\"' + str(int(time.time())) + '\"}')
 
 print("Ethereum.py DONE at: " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\t Cost: " + str(time.time() - starting_time))

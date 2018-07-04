@@ -6,6 +6,7 @@ starting_time = time.time()
 
 total_supply_api = 'https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress='
 token_top50_url = 'https://etherscan.io/token/generic-tokenholders2?a='
+limit_warning = 'You have reached your maximum request limit for this resource'
 
 token_supply = dict()
 with open("token_supply.txt", "r+") as token_supply_file:
@@ -14,16 +15,16 @@ with open("token_supply.txt", "r+") as token_supply_file:
         token_supply[key] = value[:-1]
 
 token_supply_file = open("token_supply.txt", "a")
-token_symbol_file = open("token_symbol.json", "w+")
-token_symbol_file.write("[")
+token_symbol_file = open("token_symbol.json.new", "w+")
+token_symbol_file_str = '{\"data\":['
 
 class TokenTop50Parser(HTMLParser):
     def __init__(self, token_symbol):
         HTMLParser.__init__(self)
         self.round = 0
         self.isTd = 0
-        self.file = open("CoinData/" + token_symbol + ".json", "w+")
-        self.file.write("[")
+        self.file = open("CoinData/" + token_symbol + ".json.new", "w+")
+        self.file_str = '{\"data\":['
 
     def handle_starttag(self, tag, attrs):
         if(tag == 'td'):
@@ -33,19 +34,20 @@ class TokenTop50Parser(HTMLParser):
         if(tag == 'td'):
             self.isTd = 0
         elif(tag == 'table'):
-            self.file.write("{\"status\":\"eof\"}]")
+            self.file.write(self.file_str[:-1])
+            self.file.write('],\"timestamp\":\"' + str(int(time.time())) + '\"}')
 
     def handle_data(self, data):
         if(self.isTd == 1):
             self.round += 1
             if(self.round == 1):
-                self.file.write("{\"rank\":\"" + data + "\",")
+                self.file_str += "{\"rank\":\"" + data + "\","
             elif(self.round == 2):
-                self.file.write("\"address\":\"" + data + "\",")
+                self.file_str += "\"address\":\"" + data + "\","
             elif(self.round == 3):
-                self.file.write("\"amount\":\"" + data + "\",")
+                self.file_str += "\"amount\":\"" + data + "\","
             elif(self.round == 4):
-                self.file.write("\"percentage\":\"" + data + "\"},")
+                self.file_str += "\"percentage\":\"" + data + "\"},"
                 self.round = 0
 
 
@@ -69,10 +71,11 @@ class TopTokenParser(HTMLParser):
                     # print(self.token_address) #contract address
     
     def handle_data(self, data):
+        global token_symbol_file_str
         if(self.isH5 == 1):
             token_symbol = data[data.index('(')+1:data.index(')')]
             # print("Symbol:" + token_symbol) #symbol
-            token_symbol_file.write("{\"symbol\":\"" + token_symbol + "\"},")
+            token_symbol_file_str += "{\"symbol\":\"" + token_symbol + "\"},"
 
             #get total supply of the account
             token_total_supply = token_supply.get(self.token_address)
@@ -91,6 +94,9 @@ class TopTokenParser(HTMLParser):
 
             token_top50_request = urllib.request.Request(token_top50_url + self.token_address + "&s=" + token_total_supply, headers={'User-Agent': 'Mozilla/5.0'})
             tem_str = str(urllib.request.urlopen(token_top50_request).read())
+
+            while(tem_str.find(limit_warning) != -1): #request been rejected
+                tem_str = str(urllib.request.urlopen(token_top50_request).read())
 
             tokenTop50Parser = TokenTop50Parser(token_symbol)
             tokenTop50Parser.feed(tem_str)
@@ -111,6 +117,7 @@ for i in range(1, 5):
     webpage = urllib.request.urlopen(request).read()
     topToken.feed(str(webpage))
 
-token_symbol_file.write('{\"timestamp\":\"' + str(int(time.time())) + '\"}]')
+token_symbol_file.write(token_symbol_file_str[:-1].replace('\\', '\\\\'))
+token_symbol_file.write('],\"timestamp\":\"' + str(int(time.time())) + '\"}')
 
 print("EtherScanTop200.py DONE at: " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\t Cost: " + str(time.time() - starting_time))

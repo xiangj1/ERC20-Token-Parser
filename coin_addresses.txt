@@ -102,3 +102,4 @@ POWR https://ethplorer.io/address/0x595832f8fc6bf59c85c527fec3740a1b7a361269
 WAX https://ethplorer.io/address/0x39Bb259F66E1C59d5ABEF88375979b4D20D98022
 PAY https://ethplorer.io/address/0xb97048628db6b661d4c2aa833e95dbe1a905b280
 POLY https://ethplorer.io/address/0x9992ec3cf6a55b00978cddf2b27bc6882d88d1ec
+SMART http://explorer.smartcash.cc/

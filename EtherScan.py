@@ -4,6 +4,7 @@
 #initial the url and api
 total_supply_api = 'https://api.etherscan.io/api?module=stats&action=tokensupply&contractaddress='
 token_top50_url = 'https://etherscan.io/token/generic-tokenholders2?a='
+limit_warning = 'You have reached your maximum request limit for this resource'
 
 from html.parser import HTMLParser
 import urllib.request
@@ -14,8 +15,8 @@ class TokenTop50Parser(HTMLParser):
         HTMLParser.__init__(self)
         self.round = 0
         self.isTd = 0
-        self.file = open("CoinData/" + token_symbol + ".json", "w+")
-        self.file.write("[")
+        self.file = open("CoinData/" + token_symbol + ".json.top100", "w+")
+        self.file_str = '{\"data\":['
 
     def handle_starttag(self, tag, attrs):
         if(tag == 'td'):
@@ -25,19 +26,20 @@ class TokenTop50Parser(HTMLParser):
         if(tag == 'td'):
             self.isTd = 0
         elif(tag == 'table'):
-            self.file.write('{\"timestamp\":\"' + str(int(time.time())) + '\"}]')
+            self.file.write(self.file_str[:-1])
+            self.file.write('],\"timestamp\":\"' + str(int(time.time())) + '\"}')
 
     def handle_data(self, data):
         if(self.isTd == 1):
             self.round += 1
             if(self.round == 1):
-                self.file.write("{\"rank\":\"" + data + "\",")
+                self.file_str += "{\"rank\":\"" + data + "\","
             elif(self.round == 2):
-                self.file.write("\"address\":\"" + data + "\",")
+                self.file_str += "\"address\":\"" + data + "\","
             elif(self.round == 3):
-                self.file.write("\"amount\":\"" + data + "\",")
+                self.file_str += "\"amount\":\"" + data + "\","
             elif(self.round == 4):
-                self.file.write("\"percentage\":\"" + data + "\"},")
+                self.file_str += "\"percentage\":\"" + data + "\"},"
                 self.round = 0
 
 
@@ -89,6 +91,9 @@ with open('coin_addresses.txt', 'r') as coin_addresses:
             # get top50 holders from etherscan
             token_top50_request = urllib.request.Request(token_top50_url + token_address + "&s=" + token_total_supply, headers={'User-Agent': 'Mozilla/5.0'})
             tem_str = str(urllib.request.urlopen(token_top50_request).read())
+
+            while(tem_str.find(limit_warning) != -1): #request been rejected
+                tem_str = str(urllib.request.urlopen(token_top50_request).read())
 
             tokenTop50Parser = TokenTop50Parser(symbol)
             tokenTop50Parser.feed(tem_str)
