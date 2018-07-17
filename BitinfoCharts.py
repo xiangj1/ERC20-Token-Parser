@@ -79,7 +79,7 @@ starting_time = time.time()
 for i in range(0, len(coin_name)):
     url = 'https://bitinfocharts.com/top-100-richest-%s-addresses.html'%coin_name[i]
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    time.sleep(1)
+    time.sleep(10)
     webpage = urlopen(req).read()
     parser = wallet_info(coin_symbol[i])
     parser.feed(str(webpage))

@@ -73,33 +73,37 @@ with open('coin_addresses.txt', 'r') as coin_addresses:
             # get total supply of the token
             token_total_supply = token_supply.get(token_address) 
 
-            #if token supply is unknown, get from api
-            if(token_total_supply == None):
-                supply_request = urllib.request.Request(total_supply_api + token_address, headers={'User-Agent': 'Mozilla/5.0'})
-                time.sleep(1)
-                tem_str = str(urllib.request.urlopen(supply_request).read())
+            try: 
+                #if token supply is unknown, get from api
+                if(token_total_supply == None):
+                    supply_request = urllib.request.Request(total_supply_api + token_address, headers={'User-Agent': 'Mozilla/5.0'})
+                    time.sleep(1)
+                    tem_str = str(urllib.request.urlopen(supply_request).read())
 
-                token_total_supply = tem_str[tem_str.index("result")+9:-3]
-                # print(token_total_supply) # total supply
+                    token_total_supply = tem_str[tem_str.index("result")+9:-3]
+                    # print(token_total_supply) # total supply
 
-                token_supply[token_address] = token_total_supply #store in dictionary
-                token_supply_file.write(token_address + " " + token_total_supply + "\n") #write in file
-            
-            #if supply is known
-            # else:
-                # print("Cache:" + token_total_supply)
+                    token_supply[token_address] = token_total_supply #store in dictionary
+                    token_supply_file.write(token_address + " " + token_total_supply + "\n") #write in file
+                
+                #if supply is known
+                # else:
+                    # print("Cache:" + token_total_supply)
 
-            # get top50 holders from etherscan
-            token_top50_request = urllib.request.Request(token_top50_url + token_address + "&s=" + token_total_supply, headers={'User-Agent': 'Mozilla/5.0'})
-            time.sleep(1)
-            tem_str = str(urllib.request.urlopen(token_top50_request).read())
-
-            while(tem_str.find(limit_warning) != -1): #request been rejected
-                time.sleep(1)
+                # get top50 holders from etherscan
+                token_top50_request = urllib.request.Request(token_top50_url + token_address + "&s=" + token_total_supply, headers={'User-Agent': 'Mozilla/5.0'})
+                time.sleep(10)
                 tem_str = str(urllib.request.urlopen(token_top50_request).read())
 
-            tokenTop50Parser = TokenTop50Parser(symbol)
-            tokenTop50Parser.feed(tem_str)
+                while(tem_str.find(limit_warning) != -1): #request been rejected
+                    time.sleep(10)
+                    tem_str = str(urllib.request.urlopen(token_top50_request).read())
+
+                tokenTop50Parser = TokenTop50Parser(symbol)
+                tokenTop50Parser.feed(tem_str)
+            
+            except:
+                print(token_symbol + ' running into issues... at ' + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
 
 
 print("EtherScan.py DONE at: " + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "\t Cost: " + str(time.time() - starting_time))

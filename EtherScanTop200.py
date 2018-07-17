@@ -80,29 +80,33 @@ class TopTokenParser(HTMLParser):
             #get total supply of the account
             token_total_supply = token_supply.get(self.token_address)
 
-            if(token_total_supply == None):
-                supply_request = urllib.request.Request(total_supply_api + self.token_address, headers={'User-Agent': 'Mozilla/5.0'})
-                time.sleep(1)
-                tem_str = str(urllib.request.urlopen(supply_request).read())
+            try:
+                if(token_total_supply == None):
+                    supply_request = urllib.request.Request(total_supply_api + self.token_address, headers={'User-Agent': 'Mozilla/5.0'})
+                    time.sleep(1)
+                    tem_str = str(urllib.request.urlopen(supply_request).read())
 
-                token_total_supply = tem_str[tem_str.index("result")+9:-3]
-                # print(token_total_supply) # total supply
+                    token_total_supply = tem_str[tem_str.index("result")+9:-3]
+                    # print(token_total_supply) # total supply
 
-                token_supply[self.token_address] = token_total_supply #store in dictionary
-                token_supply_file.write(self.token_address + " " + token_total_supply + "\n") #write in file
-            # else:
-            #     print("Cache:" + token_total_supply)
+                    token_supply[self.token_address] = token_total_supply #store in dictionary
+                    token_supply_file.write(self.token_address + " " + token_total_supply + "\n") #write in file
+                # else:
+                #     print("Cache:" + token_total_supply)
 
-            token_top50_request = urllib.request.Request(token_top50_url + self.token_address + "&s=" + token_total_supply, headers={'User-Agent': 'Mozilla/5.0'})
-            time.sleep(1)
-            tem_str = str(urllib.request.urlopen(token_top50_request).read())
-
-            while(tem_str.find(limit_warning) != -1): #request been rejected
-                time.sleep(1)
+                token_top50_request = urllib.request.Request(token_top50_url + self.token_address + "&s=" + token_total_supply, headers={'User-Agent': 'Mozilla/5.0'})
+                time.sleep(10)
                 tem_str = str(urllib.request.urlopen(token_top50_request).read())
 
-            tokenTop50Parser = TokenTop50Parser(token_symbol)
-            tokenTop50Parser.feed(tem_str)
+                while(tem_str.find(limit_warning) != -1): #request been rejected
+                    time.sleep(10)
+                    tem_str = str(urllib.request.urlopen(token_top50_request).read())
+
+                tokenTop50Parser = TokenTop50Parser(token_symbol)
+                tokenTop50Parser.feed(tem_str)
+            
+            except:
+                print(token_symbol + ' running into issues... at ' + time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()))
 
     def handle_endtag(self, tag):
         if(tag == 'td'):
@@ -114,11 +118,14 @@ class TopTokenParser(HTMLParser):
 topToken = TopTokenParser()
 
 for i in range(1, 5):
-    #given the url of the list of top 200 tokens
-    topTokenUrl = 'https://etherscan.io/tokens?p=' + str(i)
-    request = urllib.request.Request(topTokenUrl, headers={'User-Agent': 'Mozilla/5.0'})
-    webpage = urllib.request.urlopen(request).read()
-    topToken.feed(str(webpage))
+    try:
+        #given the url of the list of top 200 tokens
+        topTokenUrl = 'https://etherscan.io/tokens?p=' + str(i)
+        request = urllib.request.Request(topTokenUrl, headers={'User-Agent': 'Mozilla/5.0'})
+        webpage = urllib.request.urlopen(request).read()
+        topToken.feed(str(webpage))
+    except:
+        continue
 
 token_symbol_file.write(token_symbol_file_str[:-1].replace('\\', '\\\\'))
 token_symbol_file.write('],\"timestamp\":\"' + str(int(time.time())) + '\"}')

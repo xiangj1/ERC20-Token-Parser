@@ -65,6 +65,7 @@ class wallet_info(HTMLParser):
 starting_time = time.time()
 
 req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+time.sleep(10)
 webpage = urllib.request.urlopen(req).read()
 parser = wallet_info()
 
